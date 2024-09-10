@@ -36,6 +36,11 @@ class Panel(ScreenPanel):
         enabled = []
         for item in items:
             key = list(item)[0]
+            # wolk_add
+            if key == "more limits" or key == "more macros" or key == "more updater":
+                logging.info(f"custom exception >> {key}")
+                continue
+            # end_add
             if not self.evaluate_enable(item[key]['enable']):
                 logging.debug(f"X > {key}")
                 continue
@@ -45,11 +50,11 @@ class Panel(ScreenPanel):
 
     def create_menu_items(self):
         count = sum(bool(self.evaluate_enable(i[next(iter(i))]['enable'])) for i in self.items)
-        scale = 1.1 if 12 < count <= 16 else None  # hack to fit a 4th row
+        scale = 1.1 if 12 < count <= 16 else None  # hack to fit a 4th row #1.1
         for i in range(len(self.items)):
             key = list(self.items[i])[0]
             item = self.items[i][key]
-
+            
             name = self._screen.env.from_string(item['name']).render(self.j2_data)
             icon = self._screen.env.from_string(item['icon']).render(self.j2_data) if item['icon'] else None
             style = self._screen.env.from_string(item['style']).render(self.j2_data) if item['style'] else None

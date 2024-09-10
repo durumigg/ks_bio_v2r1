@@ -274,6 +274,8 @@ class KlipperScreen(Gtk.Window):
                 "exclude_object": ["current_object", "objects", "excluded_objects"],
                 "manual_probe": ['is_active'],
                 "screws_tilt_adjust": ['results', 'error'],
+                "htu21d enclosure": ['temperature', 'humidity'],#240705_add_wolk
+                "gcode_macro _EXT_AXIS_STA": ['a0_pos', 'a1_pos', 'a2_pos', 'u0_pos', 'v0_pos'],
             }
         }
         for extruder in self.printer.get_tools():
@@ -1069,6 +1071,8 @@ class KlipperScreen(Gtk.Window):
             'firmware_retraction',
             'exclude_object',
             'manual_probe',
+            'htu21d enclosure', #240705_add_wolk
+            'gcode_macro _EXT_AXIS_STA',
             *self.printer.get_tools(),
             *self.printer.get_heaters(),
             *self.printer.get_temp_sensors(),

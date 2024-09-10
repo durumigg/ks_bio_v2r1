@@ -18,11 +18,12 @@ class Panel(MenuPanel):
         self.active_heater = None
         self.h = self.f = 0
         self.main_menu = Gtk.Grid(row_homogeneous=True, column_homogeneous=True, hexpand=True, vexpand=True)
+        #self.second_menu = Gtk.Grid() # wolk_add
         scroll = self._gtk.ScrolledWindow()
         self.numpad_visible = False
 
         logging.info("### Making MainMenu")
-
+        
         stats = self._printer.get_printer_status_data()["printer"]
         if stats["temperature_devices"]["count"] > 0 or stats["extruders"]["count"] > 0:
             self._gtk.reset_temp_color()
@@ -32,11 +33,12 @@ class Panel(MenuPanel):
             scroll.add(self.labels['menu'])
             self.main_menu.attach(scroll, 0, 3, 1, 2)
         else:
-            self.main_menu.attach(self.create_left_panel(), 0, 0, 1, 1)
-            self.labels['menu'] = self.arrangeMenuItems(items, 2, True)
+            #self.main_menu.attach(self.create_left_panel(), -1, -1, 1, 1) # wolk_chg 0011
+            self.labels['menu'] = self.arrangeMenuItems(items, 5, False) # wolk_chg 2, true
             scroll.add(self.labels['menu'])
             self.main_menu.attach(scroll, 1, 0, 1, 1)
         self.content.add(self.main_menu)
+        self.main_menu.attach(self.create_left_panel(), 1, 1, 1, 4) # wolk_add
 
     def update_graph_visibility(self, force_hide=False):
         if self.left_panel is None:
@@ -214,7 +216,6 @@ class Panel(MenuPanel):
             )
 
     def create_left_panel(self):
-
         self.labels['devices'] = Gtk.Grid(vexpand=False)
         self.labels['devices'].get_style_context().add_class('heater-grid')
 
@@ -235,11 +236,20 @@ class Panel(MenuPanel):
         scroll.get_style_context().add_class('heater-list')
         scroll.add(self.labels['devices'])
 
-        self.left_panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        #w olk_chg
+        self.left_panel = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)#.VERTICAL)
+        self.left_panel.set_homogeneous(True)
+        self.left_panel.pack_start(self.labels['da'], False, True, 0)
+        #logging.info(f"########################## {self.left_panel}")
+        
         self.left_panel.add(scroll)
 
+        # wolk_chg_240904
         for d in self._printer.get_temp_devices():
-            self.add_device(d)
+            if d.startswith("extruder"):
+                pass
+            else:
+                self.add_device(d)
 
         return self.left_panel
 
@@ -259,6 +269,7 @@ class Panel(MenuPanel):
         else:
             self.main_menu.remove_column(1)
             self.main_menu.attach(self.labels["menu"], 1, 0, 1, 1)
+            self.main_menu.attach(self.create_left_panel(), 1, 1, 1, 4) # wolk_chg
         self.main_menu.show_all()
         self.numpad_visible = False
         self._screen.base_panel.set_control_sensitive(False, control='back')
@@ -276,7 +287,6 @@ class Panel(MenuPanel):
                 )
 
     def show_numpad(self, widget, device):
-
         if self.active_heater is not None:
             self.devices[self.active_heater]['name'].get_style_context().remove_class("button_active")
         self.active_heater = device

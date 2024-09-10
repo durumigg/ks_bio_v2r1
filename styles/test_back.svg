@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="600" viewBox="0 0 1024 600" version="1.1">
+    <path d="M 80 313 L 80 600 552 600 L 1024 600 1024 313 L 1024 26 552 26 L 80 26 80 313" stroke="none" fill="#CFFFF8" fill-rule="evenodd"/>
+    <path d="
+    M 0 1024 
+
+    L 102 600 102 300 
+    L 102 35 550 35 
+    L 1024 35 1024 0 
+
+    L 1024 0 600 0 
+    C 0 0, 0 0, 0 0 
+    C 0 0, 0 0, 0 0 
+    C 0 0, 0 0, 0 0" 
+    stroke="none" fill="#7cc5ba" fill-rule="evenodd"/>
+</svg>

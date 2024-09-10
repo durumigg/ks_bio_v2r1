@@ -44,6 +44,7 @@ class KlipperScreenConfig:
         self.config = configparser.ConfigParser()
         self.config_path = self.get_config_file_location(configfile)
         logging.debug(f"Config path location: {self.config_path}")
+        logging.debug(f"printer_data_config path location: {printer_data_config}")
         self.defined_config = None
         self.lang = None
         self.langs = {}
@@ -100,7 +101,7 @@ class KlipperScreenConfig:
                 "moonraker_port": self.config.get(printer, "moonraker_port", fallback="7125"),
                 "moonraker_api_key": self.config.get(printer, "moonraker_api_key", fallback="").replace('"', '')
             }} for printer in printers
-        ]
+        ]#240703_chg_ksm : moonraker_host : 127.0.0.1 -> my_ip
 
         conf_printers_debug = copy.deepcopy(self.printers)
         for printer in conf_printers_debug:

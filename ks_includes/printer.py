@@ -361,7 +361,7 @@ class Printer:
             ]
             self.temp_devices = devices + self.get_heaters() + self.get_temp_sensors() + self.get_temp_fans()
         return self.temp_devices
-
+    
     def get_tools(self):
         return self.tools
 

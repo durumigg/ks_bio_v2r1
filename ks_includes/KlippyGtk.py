@@ -43,7 +43,7 @@ class KlippyGtk:
         self.font_ratio = [28, 42] if self.screen.vertical_mode else [40, 27]
         self.font_size = min(self.width / self.font_ratio[0], self.height / self.font_ratio[1])
         self.img_scale = self.font_size * 2
-        self.button_image_scale = 1.38
+        self.button_image_scale = .8 #org: 1.38
         self.bsidescale = .65  # Buttons with image at the side
         self.dialog_buttons_height = round(self.height / 5)
 
@@ -60,7 +60,7 @@ class KlippyGtk:
             self.img_scale = self.img_scale * 0.85
             self.bsidescale = .8
         elif self.font_size_type == "small":
-            self.font_size = self.font_size * 0.91
+            self.font_size = self.font_size * 0.8 #0.91
             self.bsidescale = .55
         self.img_width = self.font_size * 3
         self.img_height = self.font_size * 3

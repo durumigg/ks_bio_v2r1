@@ -540,8 +540,12 @@ class Panel(ScreenPanel):
         self.popover.add(pobox)
         self.popover.connect("closed", self.popover_closed)
 
+        #wolk_chg_240904
         for d in self._printer.get_temp_devices():
-            self.add_device(d)
+            if d.startswith("extruder"):
+                pass
+            else:
+                self.add_device(d)
 
         return self.left_panel
 

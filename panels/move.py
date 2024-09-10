@@ -33,15 +33,38 @@ class Panel(ScreenPanel):
             "y-": self._gtk.Button("arrow-down", "Y-", "color2"),
             "z+": self._gtk.Button("z-farther", "Z+", "color3"),
             "z-": self._gtk.Button("z-closer", "Z-", "color3"),
-            "home": self._gtk.Button("home", _("Home"), "color4"),
-            "motors_off": self._gtk.Button("motor-off", _("Disable Motors"), "color4"),
+            "tz1+": self._gtk.Button("arrow-up", "TZ1+", "color5"),
+            "tz1-": self._gtk.Button("arrow-down", "TZ1-", "color5"),
+            "tz2+": self._gtk.Button("arrow-up", "TZ2+", "color5"),
+            "tz2-": self._gtk.Button("arrow-down", "TZ2-", "color5"),
+            "tz3+": self._gtk.Button("arrow-up", "TZ3+", "color5"),
+            "tz3-": self._gtk.Button("arrow-down", "TZ3-", "color5"),
+            "u+": self._gtk.Button("arrow-up", "U+", "color5"),
+            "u-": self._gtk.Button("arrow-down", "U-", "color5"),
+            "v+": self._gtk.Button("arrow-up", "V+", "color5"),
+            "v-": self._gtk.Button("arrow-down", "V-", "color5"),
+            "home": self._gtk.Button("home", _("Home"), "color1"),
+            "motors_off": self._gtk.Button("motor-off", _("Disable Motors"), "color1"),
         }
+        # wolk_add : up to v-~tz1+
         self.buttons["x+"].connect("clicked", self.move, "X", "+")
         self.buttons["x-"].connect("clicked", self.move, "X", "-")
         self.buttons["y+"].connect("clicked", self.move, "Y", "+")
         self.buttons["y-"].connect("clicked", self.move, "Y", "-")
         self.buttons["z+"].connect("clicked", self.move, "Z", "+")
         self.buttons["z-"].connect("clicked", self.move, "Z", "-")
+        # wolk_add
+        self.buttons["tz1+"].connect("clicked", self.move, "TZ1", "+")
+        self.buttons["tz1-"].connect("clicked", self.move, "TZ1", "-")
+        self.buttons["tz2+"].connect("clicked", self.move, "TZ2", "+")
+        self.buttons["tz2-"].connect("clicked", self.move, "TZ2", "-")
+        self.buttons["tz3+"].connect("clicked", self.move, "TZ3", "+")
+        self.buttons["tz3-"].connect("clicked", self.move, "TZ3", "-")
+        self.buttons["u+"].connect("clicked", self.move, "U", "+")
+        self.buttons["u-"].connect("clicked", self.move, "U", "-")
+        self.buttons["v+"].connect("clicked", self.move, "V", "+")
+        self.buttons["v-"].connect("clicked", self.move, "V", "-")
+        # end_add
         self.buttons["home"].connect("clicked", self.home)
         script = {"script": "M18"}
         self.buttons["motors_off"].connect(
@@ -87,9 +110,21 @@ class Panel(ScreenPanel):
             else:
                 grid.attach(self.buttons["z+"], 3, 0, 1, 1)
                 grid.attach(self.buttons["z-"], 3, 1, 1, 1)
+            # wolk_add
+            grid.attach(self.buttons["tz1+"], 0, 2, 1, 1)
+            grid.attach(self.buttons["tz1-"], 1, 2, 1, 1)
+            grid.attach(self.buttons["tz2+"], 2, 2, 1, 1)
+            grid.attach(self.buttons["tz2-"], 3, 2, 1, 1)
+            grid.attach(self.buttons["tz3+"], 4, 2, 1, 1)
+            grid.attach(self.buttons["tz3-"], 5, 2, 1, 1)
+            grid.attach(self.buttons["u+"], 4, 0, 1, 1)
+            grid.attach(self.buttons["u-"], 4, 1, 1, 1)
+            grid.attach(self.buttons["v+"], 5, 0, 1, 1)
+            grid.attach(self.buttons["v-"], 5, 1, 1, 1)
+            # end_add
 
-        grid.attach(self.buttons["home"], 0, 0, 1, 1)
-        grid.attach(self.buttons["motors_off"], 2, 0, 1, 1)
+        grid.attach(self.buttons["home"], 0, 0, 1, 1) # wolk_chg org:0011
+        grid.attach(self.buttons["motors_off"], 2, 0, 1, 1) # wolk_chg org:2011
 
         distgrid = Gtk.Grid()
         for j, i in enumerate(self.distances):
@@ -104,6 +139,11 @@ class Panel(ScreenPanel):
 
         for p in ("pos_x", "pos_y", "pos_z"):
             self.labels[p] = Gtk.Label()
+        # wolk_add
+        self.labels["pos_tz1"] = Gtk.Label()
+        self.labels["pos_tz2"] = Gtk.Label()
+        self.labels["pos_tz3"] = Gtk.Label()
+        # end_add
         self.labels["move_dist"] = Gtk.Label(label=_("Move Distance (mm)"))
 
         bottomgrid = Gtk.Grid(row_homogeneous=True, column_homogeneous=True)
@@ -111,9 +151,14 @@ class Panel(ScreenPanel):
         bottomgrid.attach(self.labels["pos_x"], 0, 0, 1, 1)
         bottomgrid.attach(self.labels["pos_y"], 1, 0, 1, 1)
         bottomgrid.attach(self.labels["pos_z"], 2, 0, 1, 1)
-        bottomgrid.attach(self.labels["move_dist"], 0, 1, 3, 1)
+        # wolk_add
+        bottomgrid.attach(self.labels["pos_tz1"], 3, 0, 1, 2)
+        bottomgrid.attach(self.labels["pos_tz2"], 4, 0, 1, 2)
+        bottomgrid.attach(self.labels["pos_tz3"], 5, 0, 1, 2)
+        bottomgrid.attach(self.labels["move_dist"], 0, 1, 3, 1) # wolk_chg org:0131
+        # end
         if not self._screen.vertical_mode:
-            bottomgrid.attach(adjust, 3, 0, 1, 2)
+            bottomgrid.attach(adjust, 5, 0, 1, 2) # wolk_chg org:3012
 
         self.labels["move_menu"] = Gtk.Grid(
             row_homogeneous=True, column_homogeneous=True
@@ -210,18 +255,32 @@ class Panel(ScreenPanel):
         self.menu.clear()
 
     def process_update(self, action, data):
+        # wolk_add
+        Flag_test = False
+        if ("gcode_macro _EXT_AXIS_STA" in data):
+            #logging.info(f"############## data in :")
+            Flag_test = True
+        # end_add
         if action != "notify_status_update":
             return
         if "toolhead" in data and "max_velocity" in data["toolhead"]:
             max_vel = max(int(float(data["toolhead"]["max_velocity"])), 2)
             adj = self.options["move_speed_xy"].get_adjustment()
             adj.set_upper(max_vel)
-        if (
+        if Flag_test or (
             "gcode_move" in data
             or "toolhead" in data
             and "homed_axes" in data["toolhead"]
         ):
             homed_axes = self._printer.get_stat("toolhead", "homed_axes")
+            # wolk_add
+            ex_axis_tz1 = self._printer.get_stat("gcode_macro _EXT_AXIS_STA", "a0_pos")
+            ex_axis_tz2 = self._printer.get_stat("gcode_macro _EXT_AXIS_STA", "a1_pos")
+            ex_axis_tz3 = self._printer.get_stat("gcode_macro _EXT_AXIS_STA", "a2_pos")
+            ex_axis_u0 = self._printer.get_stat("gcode_macro _EXT_AXIS_STA", "u0_pos")
+            ex_axis_v0 = self._printer.get_stat("gcode_macro _EXT_AXIS_STA", "v0_pos")
+            #logging.info(f"############## process update in :")
+            # end_add
             for i, axis in enumerate(("x", "y", "z")):
                 if axis not in homed_axes:
                     self.labels[f"pos_{axis}"].set_text(f"{axis.upper()}: ?")
@@ -229,6 +288,10 @@ class Panel(ScreenPanel):
                     self.labels[f"pos_{axis}"].set_text(
                         f"{axis.upper()}: {data['gcode_move']['gcode_position'][i]:.2f}"
                     )
+            # wolk_add
+            self.labels[f"pos_tz1"].set_text(f"TZ1: {ex_axis_tz1}\nTZ2: {ex_axis_tz2}\nTZ3: {ex_axis_tz3}")
+            self.labels[f"pos_tz2"].set_text(f"U: {ex_axis_u0}\nV: {ex_axis_v0}")
+            # end_add
 
     def change_distance(self, widget, distance):
         logging.info(f"### Distance {distance}")
@@ -242,26 +305,46 @@ class Panel(ScreenPanel):
 
     def move(self, widget, axis, direction):
         axis = axis.lower()
-        if (
-            self._config.get_config()["main"].getboolean(f"invert_{axis}", False)
-            and axis != "z"
-        ):
-            direction = "-" if direction == "+" else "+"
+        # wolk_chg
+        if axis == "x" or axis == "y" or axis == "z" :
+            if (
+                self._config.get_config()["main"].getboolean(f"invert_{axis}", False)
+                and axis != "z"
+            ):
+                direction = "-" if direction == "+" else "+"
 
-        dist = f"{direction}{self.distance}"
-        config_key = "move_speed_z" if axis == "Z" else "move_speed_xy"
-        speed = (
-            None
-            if self.ks_printer_cfg is None
-            else self.ks_printer_cfg.getint(config_key, None)
-        )
-        if speed is None:
-            speed = self._config.get_config()["main"].getint(config_key, 20)
-        speed = 60 * max(1, speed)
-        script = f"{KlippyGcodes.MOVE_RELATIVE}\nG0 {axis}{dist} F{speed}"
-        self._screen._send_action(widget, "printer.gcode.script", {"script": script})
-        if self._printer.get_stat("gcode_move", "absolute_coordinates"):
-            self._screen._ws.klippy.gcode_script("G90")
+            dist = f"{direction}{self.distance}"
+            config_key = "move_speed_z" if axis == "Z" else "move_speed_xy"
+            speed = (
+                None
+                if self.ks_printer_cfg is None
+                else self.ks_printer_cfg.getint(config_key, None)
+            )
+            if speed is None:
+                speed = self._config.get_config()["main"].getint(config_key, 20)
+            speed = 60 * max(1, speed)
+            script = f"{KlippyGcodes.MOVE_RELATIVE}\nG0 {axis}{dist} F{speed}"
+            self._screen._send_action(widget, "printer.gcode.script", {"script": script})
+            if self._printer.get_stat("gcode_move", "absolute_coordinates"):
+                self._screen._ws.klippy.gcode_script("G90")
+        # wolk_add
+        else :
+            axis_ex = ""
+            if axis == "tz1":
+                axis_ex = "A0"
+            elif axis == "tz2":
+                axis_ex = "A1"
+            elif axis == "tz3":
+                axis_ex = "A2"
+            elif axis == "u":
+                axis_ex = "U0"
+            elif axis == "v":
+                axis_ex = "V0"
+            dist = f"{direction}{self.distance}"
+            script = f"{axis_ex} R{dist.strip('+')}"
+            self._screen._send_action(widget, "printer.gcode.script", {"script": script})
+            #logging.info(f"############## no xyz~~ {axis}")
+        # end_chg_add
 
     def home(self, widget):
         if "delta" in self._printer.get_config_section("printer")["kinematics"]:

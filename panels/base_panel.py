@@ -145,12 +145,17 @@ class BasePanel(ScreenPanel):
             else:
                 self.current_extruder = False
             for device in devices:
-                if n >= nlimit:
+                if n >= nlimit + 3: #240704_chg_wolk : nlimit -> nlimit + 1 (left, Right heater)
                     break
                 if device.startswith("extruder") and self.current_extruder is False:
-                    self.control['temp_box'].add(self.labels[f"{device}_box"])
+                    #self.control['temp_box'].add(self.labels[f"{device}_box"]) #240704_chg_wolk : #no extruder
                     n += 1
                 elif device.startswith("heater"):
+                    self.control['temp_box'].add(self.labels[f"{device}_box"])
+                    n += 1
+                #########################################################
+                ##240705_add_wolk
+                elif device.startswith("temperature_sensor enclosure"):
                     self.control['temp_box'].add(self.labels[f"{device}_box"])
                     n += 1
             for device in devices:
@@ -263,6 +268,7 @@ class BasePanel(ScreenPanel):
             return
         for device in self._printer.get_temp_devices():
             temp = self._printer.get_stat(device, "temperature")
+            humid = self._printer.get_stat("htu21d enclosure", "humidity") #240705_add_wolk
             if temp and device in self.labels:
                 name = ""
                 if not (device.startswith("extruder") or device.startswith("heater_bed")):
@@ -272,7 +278,13 @@ class BasePanel(ScreenPanel):
                     elif self.titlebar_name_type == "short":
                         name = device.split()[1] if len(device.split()) > 1 else device
                         name = f"{name[:1].upper()}: "
-                self.labels[device].set_label(f"{name}{temp:.0f}°")
+                ###################################################################################
+                ## 240705_chg_wolk : add humidity
+                if device.startswith("temperature_sensor enclosure"):
+                    self.labels[device].set_label(f"{name}{temp:.0f}° {humid:.0f}%")
+                    #logging.debug(f"#############################heaters: {humid}")
+                else:
+                    self.labels[device].set_label(f"{name}{temp:.0f}°") #origin
 
         if (self.current_extruder and 'toolhead' in data and 'extruder' in data['toolhead']
                 and data["toolhead"]["extruder"] != self.current_extruder):

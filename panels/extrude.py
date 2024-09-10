@@ -3,12 +3,14 @@ import re
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Pango
+from gi.repository import Gtk, GLib, Pango
 from ks_includes.KlippyGcodes import KlippyGcodes
 from ks_includes.screen_panel import ScreenPanel
 from ks_includes.widgets.autogrid import AutoGrid
 from ks_includes.KlippyGtk import find_widget
+from ks_includes.functions import parse_bool
 
+#wolk_add : GLib, import parse_bool
 
 class Panel(ScreenPanel):
 
@@ -98,7 +100,7 @@ class Panel(ScreenPanel):
             xbox.add(self.labels["current_extruder"])
             self.labels["current_extruder"].connect("clicked", self.load_menu, 'extruders', _('Extruders'))
         if not self._screen.vertical_mode:
-            xbox.add(self.buttons['pressure'])
+            #xbox.add(self.buttons['pressure']) #wolk_chg
             i += 1
         if self._printer.get_config_section("firmware_retraction") and not self._screen.vertical_mode:
             xbox.add(self.buttons['retraction'])
@@ -174,17 +176,100 @@ class Panel(ScreenPanel):
             grid.attach(speedbox, 0, 5, 4, 1)
             grid.attach(sensors, 0, 6, 4, 1)
         else:
-            grid.attach(self.buttons['extrude'], 0, 2, 1, 1)
-            grid.attach(self.buttons['load'], 1, 2, 1, 1)
-            grid.attach(self.buttons['unload'], 2, 2, 1, 1)
-            grid.attach(self.buttons['retract'], 3, 2, 1, 1)
-            grid.attach(distbox, 0, 3, 2, 1)
-            grid.attach(speedbox, 2, 3, 2, 1)
+            grid.attach(self.buttons['extrude'], 0, 1, 1, 1) # 0211
+            #grid.attach(self.buttons['load'], 1, 2, 1, 1) #wolk_chg
+            #grid.attach(self.buttons['unload'], 2, 2, 1, 1)
+            grid.attach(self.buttons['retract'], 1, 1, 1, 1) # 3211
+            grid.attach(distbox, 0, 4, 2, 1)
+            grid.attach(speedbox, 2, 4, 2, 1)
             grid.attach(sensors, 0, 4, 4, 1)
+        
+        #wolk_add
+        self.devices = {}
+        # Create a grid for all devices
+        self.labels['devices'] = Gtk.Grid(column_homogeneous=True)#valign=Gtk.Align.CENTER)    
+
+        grid.attach(self.labels['devices'],0,2,4,1)
+        output_pins = self._printer.get_pwm_tools() + self._printer.get_output_pins()
+        logging.info(f"output pin: {output_pins}")
+        for pin in output_pins:
+            # Support for hiding devices by name
+            out_name = pin.split()[1]
+            if out_name.startswith("_"):
+                continue
+            if out_name.startswith("EPRESS"):
+                logging.info(f"EPRESS search: {out_name}")
+                out_name = Gtk.Label(
+                    hexpand=True, vexpand=True, halign=Gtk.Align.START, valign=Gtk.Align.CENTER,
+                    wrap=True, wrap_mode=Pango.WrapMode.WORD_CHAR)
+                out_name.set_markup(f'\n<big><b>{" ".join(pin.split(" ")[1:])}</b></big>\n')
+                self.devices[pin] = {}
+                section = self._printer.get_config_section(pin)
+                if parse_bool(section.get('pwm', 'false')) or parse_bool(section.get('hardware_pwm', 'false')):
+                    #logging.info(f"in if: {out_name}, pin: {pin}")
+                    scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
+                    scale.set_value(self.check_pin_value(pin))
+                    scale.set_digits(0)
+                    scale.set_hexpand(True)
+                    scale.set_has_origin(True)
+                    scale.get_style_context().add_class("fan_slider")
+                    self.devices[pin]['scale'] = scale
+                    scale.connect("button-release-event", self.set_output_pin, pin)
+
+                    min_btn = self._gtk.Button("cancel", None, "color1", 0.4) #1)
+                    min_btn.set_hexpand(False)
+                    min_btn.connect("clicked", self.update_pin_value, pin, 0)
+                    pin_col = Gtk.Box(spacing=5)
+                    pin_col.add(min_btn)
+                    pin_col.add(scale)
+                    self.devices[pin]["row"] = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+                    self.devices[pin]["row"].add(out_name)
+                    self.devices[pin]["row"].add(pin_col)
+                    
+                    #logging.info(f"pinpinpinpinout_name: {pin}")
+                    
+        self.labels['devices'].attach(self.devices['output_pin EPRESS1']['row'], 0, 1, 1, 1)
+        self.labels['devices'].attach(self.devices['output_pin EPRESS2']['row'], 1, 1, 1, 1)
+        self.labels['devices'].attach(self.devices['output_pin EPRESS3']['row'], 2, 1, 1, 1)
+        
+        # add_end
 
         self.menu = ['extrude_menu']
         self.labels['extrude_menu'] = grid
         self.content.add(self.labels['extrude_menu'])
+    
+    # wolk_add
+    def set_output_pin(self, widget, event, pin):
+        if isinstance(widget, Gtk.Switch):
+            widget.set_sensitive(False)
+        if 'scale' in self.devices[pin]:
+            value = self.devices[pin]["scale"].get_value() / 100
+        elif 'switch' in self.devices[pin]:
+            value = 1 if self.devices[pin]['switch'].get_active() else 0
+        else:
+            logging.error(f'unknown value for {widget} {event} {pin}')
+            return
+        self._screen._ws.klippy.gcode_script(f'SET_PIN PIN={" ".join(pin.split(" ")[1:])} VALUE={value}')
+        GLib.timeout_add_seconds(1, self.check_pin_value, pin, widget)
+                
+    def check_pin_value(self, pin, widget=None):
+        self.update_pin_value(None, pin, self._printer.get_pin_value(pin))
+        if widget and isinstance(widget, Gtk.Switch):
+            widget.set_sensitive(True)
+        return False
+
+    def update_pin_value(self, widget, pin, value):
+        if pin not in self.devices:
+            return
+        if 'scale' in self.devices[pin]:
+            self.devices[pin]['scale'].disconnect_by_func(self.set_output_pin)
+            self.devices[pin]['scale'].set_value(round(float(value) * 100))
+            self.devices[pin]['scale'].connect("button-release-event", self.set_output_pin, pin)
+        elif 'switch' in self.devices[pin]:
+            self.devices[pin]['switch'].set_active(value == 1)
+        if widget is not None:
+            self.set_output_pin(widget, None, pin)
+    # add_end
 
     def enable_buttons(self, enable):
         for button in self.buttons:
@@ -238,6 +323,11 @@ class Panel(ScreenPanel):
                             self.labels[x]['box'].get_style_context().remove_class("filament_sensor_detected")
                             self.labels[x]['box'].get_style_context().add_class("filament_sensor_empty")
                 logging.info(f"{x}: {self._printer.get_stat(x)}")
+        # wolk_add        
+        for pin in self.devices:
+            if pin in data and "value" in data[pin]:
+                self.update_pin_value(None, pin, data[pin]["value"])
+        # add_end
 
     def change_distance(self, widget, distance):
         logging.info(f"### Distance {distance}")
@@ -299,4 +389,18 @@ class Panel(ScreenPanel):
         new_label_text += "°\n"
         if self._show_heater_power and power:
             new_label_text += f" {power * 100:.0f}%"
-        find_widget(self.labels[extruder], Gtk.Label).set_text(new_label_text)
+        #find_widget(self.labels[extruder], Gtk.Label).set_text(new_label_text) # wolk_chg
+    
+    # wolk_add
+    def update_pin_value(self, widget, pin, value):
+        if pin not in self.devices:
+            return
+        if 'scale' in self.devices[pin]:
+            self.devices[pin]['scale'].disconnect_by_func(self.set_output_pin)
+            self.devices[pin]['scale'].set_value(round(float(value) * 100))
+            self.devices[pin]['scale'].connect("button-release-event", self.set_output_pin, pin)
+        elif 'switch' in self.devices[pin]:
+            self.devices[pin]['switch'].set_active(value == 1)
+        if widget is not None:
+            self.set_output_pin(widget, None, pin)
+    # add_end

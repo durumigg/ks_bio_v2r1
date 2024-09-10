@@ -1,4 +1,5 @@
 import gi
+import logging
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -21,7 +22,7 @@ class AutoGrid(Gtk.Grid):
     def __init__(self, items=None, max_columns=None, expand_last=False, vertical=False):
         super().__init__(row_homogeneous=True, column_homogeneous=True)
         if not max_columns:
-            max_columns = 3 if vertical else 4
+            max_columns = 10 if vertical else 10 # wolk_chg 3, 4
         self.expand_last = expand_last
         if not items:
             return
@@ -32,9 +33,14 @@ class AutoGrid(Gtk.Grid):
         elif length in {4, 2}:
             # Arrange 2 x 2
             columns = min(2, max_columns)
-        elif length in {3, 5, 6}:
+        # wolk_add_chg
+        elif length in {5}: # 356
+            # Arrange 5 x nm
+            columns = min(5, max_columns) #3
+        elif length in {3, 5, 6}: # 356
             # Arrange 3 x 2
-            columns = min(3, max_columns)
+            columns = min(3, max_columns) #3
+        # end_add_chg
         else:
             # Arrange 4 x n
             columns = min(4, max_columns)
