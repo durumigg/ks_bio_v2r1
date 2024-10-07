@@ -45,8 +45,10 @@ class BasePanel(ScreenPanel):
         self.control['printer_select'].set_no_show_all(True)
 
         self.shorcut = {
-            "panel": "gcode_macros",
-            "icon": "custom-script",
+            #"panel": "gcode_macros", # wolk_chg : org macro menu
+            #"icon": "custom-script",
+            "panel": "toolcalibrate",
+            "icon": "offset",
         }
         self.control['shortcut'] = self._gtk.Button(self.shorcut['icon'], scale=abscale)
         self.control['shortcut'].connect("clicked", self.menu_item_clicked, self.shorcut)

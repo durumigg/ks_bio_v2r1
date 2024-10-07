@@ -6,6 +6,7 @@
 @define-color color3 #FAFAFA;
 @define-color color4 #FAFAFA;
 @define-color color5 #EFEFEF;
+@define-color color6 #FFE082;
 @define-color border #7CC5BA;
 @define-color active #4B47EB;
 @define-color warning #FFE082;
@@ -14,6 +15,14 @@
 @define-color textview #212121;
 @define-color slidecolor #B4DED8;
 @define-color activeitem #7F7F7F;
+@define-color activecolor #EBEAE5;
+@define-color itemspecial #DDCCFF;
+@define-color color11 #E6E6E6;
+@define-color color12 #F5F5F5;
+@define-color color21 #D4D4D4;
+@define-color color22 #ECECEC;
+@define-color color31 #BEBEBE;
+@define-color color32 #E2E2E2;
 
 * {
     color: @text ;
@@ -41,7 +50,7 @@ button:active {
     border-color: @activeitem;
     border-style: solid;
     border-width: .15em;
-    background-color: @bg;
+    background-color: @itemspecial;
     box-shadow: .1em .1em @activeitem;
     border-radius: 1em;
 }
@@ -49,10 +58,12 @@ button:active {
 button.color1 label,
 button.color2 label,
 button.color3 label,
-button.color4 label {
-    color: @text;
-}
-button.color5 label {
+button.color4 label,
+button.color5 label,
+button.color6 label,
+button.color11 label,
+button.color21 label,
+button.color31 label {
     color: @text;
 }
 
@@ -60,35 +71,62 @@ button.color1 {
     background-color: @color1;
     border-color: @color1;
     box-shadow: .1em .1em @border;
-    border-radius: 1em;
+    border-radius: .5em;
 }
 
 button.color2 {
     background-color: @color2;
     border-color: @color2;
     box-shadow: .1em .1em @border;
-    border-radius: 1em;
+    border-radius: .5em;
 }
 
 button.color3 {
     background-color: @color3;
     border-color: @color3;
     box-shadow: .1em .1em @border;
-    border-radius: 1em;
+    border-radius: .5em;
 }
 
 button.color4 {
     background-color: @color4;
     border-color: @color4;
     box-shadow: .1em .1em @border;
-    border-radius: 1em;
+    border-radius: .5em;
 }
 
 button.color5 {
     background-color: @color5;
     border-color: @color4;
     box-shadow: .1em .1em @border;
-    border-radius: 1em;
+    border-radius: .5em;
+}
+button.color6 {
+    background-color: @color6;
+    border-color: @color4;
+    box-shadow: .1em .1em @border;
+    border-radius: .5em;
+}
+button.color11 {
+    background-color: @color11;
+    border-color: @color12;
+    box-shadow: .1em .1em @border;
+    border-radius: .5em;
+    border-width: .2em;
+}
+button.color21 {
+    background-color: @color21;
+    border-color: @color22;
+    box-shadow: .1em .1em @border;
+    border-radius: .5em;
+    border-width: .2em;
+}
+button.color31 {
+    background-color: @color31;
+    border-color: @color32;
+    box-shadow: .1em .1em @border;
+    border-radius: .5em;
+    border-width: .2em;
 }
 
 button.color1:active,
@@ -96,10 +134,15 @@ button.color2:active,
 button.color3:active,
 button.color4:active,
 button.color5:active,
+button.color6:active,
+button.color11:active,
+button.color21:active,
+button.color31:active,
 button.update:active,
 button.invalid:active,
 .dialog button:active {
     border-style: none;
+    background-color: @activecolor;
 }
 
 button.active {
@@ -215,6 +258,19 @@ textview .time {
 }
 
 .horizontal_togglebuttons_active label {
+    color: @text;
+}
+
+.vertical_togglebuttons  {
+    border-color: @border;
+    background-color: @bg;
+}
+
+.vertical_togglebuttons_active {
+    background-color: @active;
+}
+
+.vertical_togglebuttons_active label {
     color: @text;
 }
 

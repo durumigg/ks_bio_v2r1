@@ -37,7 +37,7 @@ class Panel(ScreenPanel):
         for item in items:
             key = list(item)[0]
             # wolk_add
-            if key == "more limits" or key == "more macros" or key == "more updater":
+            if key == "more limits" or key == "more updater":
                 logging.info(f"custom exception >> {key}")
                 continue
             # end_add

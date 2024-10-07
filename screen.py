@@ -276,6 +276,9 @@ class KlipperScreen(Gtk.Window):
                 "screws_tilt_adjust": ['results', 'error'],
                 "htu21d enclosure": ['temperature', 'humidity'],#240705_add_wolk
                 "gcode_macro _EXT_AXIS_STA": ['a0_pos', 'a1_pos', 'a2_pos', 'u0_pos', 'v0_pos'],
+                "save_variables": ['variables'], # wolk_add
+                "gcode_macro _EXT_OFFSETPOS_STA": ['t0_x_pos', 't0_y_pos', 't0_z_pos', 't1_x_pos', 't1_y_pos', 't1_z_pos', 
+                                                   't2_x_pos', 't2_y_pos', 't2_z_pos'],
             }
         }
         for extruder in self.printer.get_tools():
@@ -1072,7 +1075,9 @@ class KlipperScreen(Gtk.Window):
             'exclude_object',
             'manual_probe',
             'htu21d enclosure', #240705_add_wolk
-            'gcode_macro _EXT_AXIS_STA',
+            'gcode_macro _EXT_AXIS_STA', # wolk_add
+            'save_variables',
+            'gcode_macro _EXT_OFFSETPOS_STA',
             *self.printer.get_tools(),
             *self.printer.get_heaters(),
             *self.printer.get_temp_sensors(),

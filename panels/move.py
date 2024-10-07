@@ -31,18 +31,18 @@ class Panel(ScreenPanel):
             "x-": self._gtk.Button("arrow-left", "X-", "color1"),
             "y+": self._gtk.Button("arrow-up", "Y+", "color2"),
             "y-": self._gtk.Button("arrow-down", "Y-", "color2"),
-            "z+": self._gtk.Button("z-farther", "Z+", "color3"),
-            "z-": self._gtk.Button("z-closer", "Z-", "color3"),
-            "tz1+": self._gtk.Button("arrow-up", "TZ1+", "color5"),
-            "tz1-": self._gtk.Button("arrow-down", "TZ1-", "color5"),
-            "tz2+": self._gtk.Button("arrow-up", "TZ2+", "color5"),
-            "tz2-": self._gtk.Button("arrow-down", "TZ2-", "color5"),
-            "tz3+": self._gtk.Button("arrow-up", "TZ3+", "color5"),
-            "tz3-": self._gtk.Button("arrow-down", "TZ3-", "color5"),
-            "u+": self._gtk.Button("arrow-up", "U+", "color5"),
-            "u-": self._gtk.Button("arrow-down", "U-", "color5"),
-            "v+": self._gtk.Button("arrow-up", "V+", "color5"),
-            "v-": self._gtk.Button("arrow-down", "V-", "color5"),
+            "z+": self._gtk.Button("z-farther", "Z+", "color11"),
+            "z-": self._gtk.Button("z-closer", "Z-", "color11"),
+            "tz1+": self._gtk.Button("arrow-up", "TZ1+", "color31"),
+            "tz1-": self._gtk.Button("arrow-down", "TZ1-", "color31"),
+            "tz2+": self._gtk.Button("arrow-up", "TZ2+", "color31"),
+            "tz2-": self._gtk.Button("arrow-down", "TZ2-", "color31"),
+            "tz3+": self._gtk.Button("arrow-up", "TZ3+", "color31"),
+            "tz3-": self._gtk.Button("arrow-down", "TZ3-", "color31"),
+            "u+": self._gtk.Button("arrow-up", "U+", "color21"),
+            "u-": self._gtk.Button("arrow-down", "U-", "color21"),
+            "v+": self._gtk.Button("arrow-right", "V+", "color21"),
+            "v-": self._gtk.Button("arrow-left", "V-", "color21"),
             "home": self._gtk.Button("home", _("Home"), "color1"),
             "motors_off": self._gtk.Button("motor-off", _("Disable Motors"), "color1"),
         }
@@ -105,26 +105,26 @@ class Panel(ScreenPanel):
             grid.attach(self.buttons["y+"], 1, 0, 1, 1)
             grid.attach(self.buttons["y-"], 1, 1, 1, 1)
             if self._config.get_config()["main"].getboolean("invert_z", False):
-                grid.attach(self.buttons["z+"], 3, 1, 1, 1)
-                grid.attach(self.buttons["z-"], 3, 0, 1, 1)
+                grid.attach(self.buttons["z+"], 0, 0, 1, 1)
+                grid.attach(self.buttons["z-"], 2, 0, 1, 1)
             else:
-                grid.attach(self.buttons["z+"], 3, 0, 1, 1)
-                grid.attach(self.buttons["z-"], 3, 1, 1, 1)
+                grid.attach(self.buttons["z+"], 3, 0, 1, 1) # 2011
+                grid.attach(self.buttons["z-"], 3, 1, 1, 1) # 0011
             # wolk_add
-            grid.attach(self.buttons["tz1+"], 0, 2, 1, 1)
-            grid.attach(self.buttons["tz1-"], 1, 2, 1, 1)
-            grid.attach(self.buttons["tz2+"], 2, 2, 1, 1)
-            grid.attach(self.buttons["tz2-"], 3, 2, 1, 1)
-            grid.attach(self.buttons["tz3+"], 4, 2, 1, 1)
-            grid.attach(self.buttons["tz3-"], 5, 2, 1, 1)
-            grid.attach(self.buttons["u+"], 4, 0, 1, 1)
-            grid.attach(self.buttons["u-"], 4, 1, 1, 1)
-            grid.attach(self.buttons["v+"], 5, 0, 1, 1)
-            grid.attach(self.buttons["v-"], 5, 1, 1, 1)
+            grid.attach(self.buttons["tz1+"], 7, 0, 1, 1) # 0211
+            grid.attach(self.buttons["tz1-"], 7, 1, 1, 1) # 1211
+            grid.attach(self.buttons["tz2+"], 8, 0, 1, 1) # 2211
+            grid.attach(self.buttons["tz2-"], 8, 1, 1, 1) # 3211
+            grid.attach(self.buttons["tz3+"], 9, 0, 1, 1) # 4211
+            grid.attach(self.buttons["tz3-"], 9, 1, 1, 1) # 5211
+            grid.attach(self.buttons["u+"], 5, 0, 1, 1)
+            grid.attach(self.buttons["u-"], 5, 1, 1, 1)
+            grid.attach(self.buttons["v+"], 6, 1, 1, 1)
+            grid.attach(self.buttons["v-"], 4, 1, 1, 1)
             # end_add
 
-        grid.attach(self.buttons["home"], 0, 0, 1, 1) # wolk_chg org:0011
-        grid.attach(self.buttons["motors_off"], 2, 0, 1, 1) # wolk_chg org:2011
+        grid.attach(self.buttons["home"], 2, 2, 3, 1) # wolk_chg org:0011
+        grid.attach(self.buttons["motors_off"], 5, 2, 3, 1) # wolk_chg org:2011
 
         distgrid = Gtk.Grid()
         for j, i in enumerate(self.distances):
@@ -289,8 +289,8 @@ class Panel(ScreenPanel):
                         f"{axis.upper()}: {data['gcode_move']['gcode_position'][i]:.2f}"
                     )
             # wolk_add
-            self.labels[f"pos_tz1"].set_text(f"TZ1: {ex_axis_tz1}\nTZ2: {ex_axis_tz2}\nTZ3: {ex_axis_tz3}")
-            self.labels[f"pos_tz2"].set_text(f"U: {ex_axis_u0}\nV: {ex_axis_v0}")
+            self.labels[f"pos_tz1"].set_text(f"TZ1: {ex_axis_tz1:.2f}\nTZ2: {ex_axis_tz2:.2f}\nTZ3: {ex_axis_tz3:.2f}")
+            self.labels[f"pos_tz2"].set_text(f"U: {ex_axis_u0:.2f}\nV: {ex_axis_v0:.2f}")
             # end_add
 
     def change_distance(self, widget, distance):
