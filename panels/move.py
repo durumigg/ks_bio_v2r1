@@ -27,22 +27,22 @@ class Panel(ScreenPanel):
         self.settings = {}
         self.menu.append("move_menu")
         self.buttons = {
-            "x+": self._gtk.Button("arrow-right", "X+", "color1"),
-            "x-": self._gtk.Button("arrow-left", "X-", "color1"),
-            "y+": self._gtk.Button("arrow-up", "Y+", "color2"),
-            "y-": self._gtk.Button("arrow-down", "Y-", "color2"),
+            "x+": self._gtk.Button("arrow-left", "X+", "color1"),
+            "x-": self._gtk.Button("arrow-right", "X-", "color1"),
+            "y+": self._gtk.Button("arrow-down", "Y+", "color2"),
+            "y-": self._gtk.Button("arrow-up", "Y-", "color2"),
             "z+": self._gtk.Button("z-farther", "Z+", "color11"),
             "z-": self._gtk.Button("z-closer", "Z-", "color11"),
-            "tz1+": self._gtk.Button("arrow-up", "TZ1+", "color31"),
-            "tz1-": self._gtk.Button("arrow-down", "TZ1-", "color31"),
-            "tz2+": self._gtk.Button("arrow-up", "TZ2+", "color31"),
-            "tz2-": self._gtk.Button("arrow-down", "TZ2-", "color31"),
-            "tz3+": self._gtk.Button("arrow-up", "TZ3+", "color31"),
-            "tz3-": self._gtk.Button("arrow-down", "TZ3-", "color31"),
-            "u+": self._gtk.Button("arrow-up", "U+", "color21"),
-            "u-": self._gtk.Button("arrow-down", "U-", "color21"),
-            "v+": self._gtk.Button("arrow-right", "V+", "color21"),
-            "v-": self._gtk.Button("arrow-left", "V-", "color21"),
+            "tz0+": self._gtk.Button("arrow-down", "TZ0+", "color31"),
+            "tz0-": self._gtk.Button("arrow-up", "TZ0-", "color31"),
+            "tz1+": self._gtk.Button("arrow-down", "TZ1+", "color31"),
+            "tz1-": self._gtk.Button("arrow-up", "TZ1-", "color31"),
+            "tz2+": self._gtk.Button("arrow-down", "TZ2+", "color31"),
+            "tz2-": self._gtk.Button("arrow-up", "TZ2-", "color31"),
+            "u+": self._gtk.Button("arrow-right", "U+", "color21"),
+            "u-": self._gtk.Button("arrow-left", "U-", "color21"),
+            "v+": self._gtk.Button("arrow-up", "V+", "color21"),
+            "v-": self._gtk.Button("arrow-down", "V-", "color21"),
             "home": self._gtk.Button("home", _("Home"), "color1"),
             "motors_off": self._gtk.Button("motor-off", _("Disable Motors"), "color1"),
         }
@@ -54,12 +54,12 @@ class Panel(ScreenPanel):
         self.buttons["z+"].connect("clicked", self.move, "Z", "+")
         self.buttons["z-"].connect("clicked", self.move, "Z", "-")
         # wolk_add
+        self.buttons["tz0+"].connect("clicked", self.move, "TZ0", "+")
+        self.buttons["tz0-"].connect("clicked", self.move, "TZ0", "-")
         self.buttons["tz1+"].connect("clicked", self.move, "TZ1", "+")
         self.buttons["tz1-"].connect("clicked", self.move, "TZ1", "-")
         self.buttons["tz2+"].connect("clicked", self.move, "TZ2", "+")
         self.buttons["tz2-"].connect("clicked", self.move, "TZ2", "-")
-        self.buttons["tz3+"].connect("clicked", self.move, "TZ3", "+")
-        self.buttons["tz3-"].connect("clicked", self.move, "TZ3", "-")
         self.buttons["u+"].connect("clicked", self.move, "U", "+")
         self.buttons["u-"].connect("clicked", self.move, "U", "-")
         self.buttons["v+"].connect("clicked", self.move, "V", "+")
@@ -97,13 +97,13 @@ class Panel(ScreenPanel):
 
         else:
             if self._screen.lang_ltr:
-                grid.attach(self.buttons["x+"], 2, 1, 1, 1)
-                grid.attach(self.buttons["x-"], 0, 1, 1, 1)
+                grid.attach(self.buttons["x+"], 0, 1, 1, 1) # 2111
+                grid.attach(self.buttons["x-"], 2, 1, 1, 1) # 0111
             else:
                 grid.attach(self.buttons["x+"], 0, 1, 1, 1)
                 grid.attach(self.buttons["x-"], 2, 1, 1, 1)
-            grid.attach(self.buttons["y+"], 1, 0, 1, 1)
-            grid.attach(self.buttons["y-"], 1, 1, 1, 1)
+            grid.attach(self.buttons["y+"], 1, 1, 1, 1) # 1011
+            grid.attach(self.buttons["y-"], 1, 0, 1, 1) # 1111
             if self._config.get_config()["main"].getboolean("invert_z", False):
                 grid.attach(self.buttons["z+"], 0, 0, 1, 1)
                 grid.attach(self.buttons["z-"], 2, 0, 1, 1)
@@ -111,16 +111,16 @@ class Panel(ScreenPanel):
                 grid.attach(self.buttons["z+"], 3, 0, 1, 1) # 2011
                 grid.attach(self.buttons["z-"], 3, 1, 1, 1) # 0011
             # wolk_add
-            grid.attach(self.buttons["tz1+"], 7, 0, 1, 1) # 0211
-            grid.attach(self.buttons["tz1-"], 7, 1, 1, 1) # 1211
-            grid.attach(self.buttons["tz2+"], 8, 0, 1, 1) # 2211
-            grid.attach(self.buttons["tz2-"], 8, 1, 1, 1) # 3211
-            grid.attach(self.buttons["tz3+"], 9, 0, 1, 1) # 4211
-            grid.attach(self.buttons["tz3-"], 9, 1, 1, 1) # 5211
-            grid.attach(self.buttons["u+"], 5, 0, 1, 1)
-            grid.attach(self.buttons["u-"], 5, 1, 1, 1)
-            grid.attach(self.buttons["v+"], 6, 1, 1, 1)
-            grid.attach(self.buttons["v-"], 4, 1, 1, 1)
+            grid.attach(self.buttons["tz0+"], 7, 1, 1, 1) # 0211
+            grid.attach(self.buttons["tz0-"], 7, 0, 1, 1) # 1211
+            grid.attach(self.buttons["tz1+"], 8, 1, 1, 1) # 2211
+            grid.attach(self.buttons["tz1-"], 8, 0, 1, 1) # 3211
+            grid.attach(self.buttons["tz2+"], 9, 1, 1, 1) # 4211
+            grid.attach(self.buttons["tz2-"], 9, 0, 1, 1) # 5211
+            grid.attach(self.buttons["u+"], 6, 1, 1, 1) # 5011
+            grid.attach(self.buttons["u-"], 4, 1, 1, 1) # 5111
+            grid.attach(self.buttons["v+"], 5, 0, 1, 1) # 6111
+            grid.attach(self.buttons["v-"], 5, 1, 1, 1) # 4111
             # end_add
 
         grid.attach(self.buttons["home"], 2, 2, 3, 1) # wolk_chg org:0011
@@ -330,11 +330,11 @@ class Panel(ScreenPanel):
         # wolk_add
         else :
             axis_ex = ""
-            if axis == "tz1":
+            if axis == "tz0":
                 axis_ex = "A0"
-            elif axis == "tz2":
+            elif axis == "tz1":
                 axis_ex = "A1"
-            elif axis == "tz3":
+            elif axis == "tz2":
                 axis_ex = "A2"
             elif axis == "u":
                 axis_ex = "U0"
@@ -354,3 +354,4 @@ class Panel(ScreenPanel):
         disname = self._screen._config.get_menu_name("move", name)
         menuitems = self._screen._config.get_menu_items("move", name)
         self._screen.show_panel("menu", disname, items=menuitems)
+        logging.info(f"############## no xyz~~ {disname}")

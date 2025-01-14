@@ -69,11 +69,19 @@ class Panel(ScreenPanel):
         i = 0
         extruder_buttons = []
         self.labels = {}
-        for extruder in self._printer.get_tools():
+        temp_tools = []
+        #temp_tools = self._printer.get_tools()
+        #temp_tools.append('extruder3')
+        temp_tools = ['extruder', 'extruder1', 'extruder2', 'extruder3']
+        #for extruder in self._printer.get_tools():
+        logging.info(f"extruder: {temp_tools}")
+        for extruder in temp_tools:
             if self._printer.extrudercount == 1:
                 self.labels[extruder] = self._gtk.Button("extruder", "")
             else:
-                n = self._printer.get_tool_number(extruder)
+                #n = self._printer.get_tool_number(extruder)
+                n = i
+                logging.info(f"extruder number: {n}")
                 self.labels[extruder] = self._gtk.Button(f"extruder-{n}", f"T{n}")
                 self.labels[extruder].connect("clicked", self.change_extruder, extruder)
             if extruder == self.current_extruder:
@@ -176,10 +184,10 @@ class Panel(ScreenPanel):
             grid.attach(speedbox, 0, 5, 4, 1)
             grid.attach(sensors, 0, 6, 4, 1)
         else:
-            grid.attach(self.buttons['extrude'], 0, 1, 1, 1) # 0211
+            grid.attach(self.buttons['extrude'], 0, 1, 2, 1) # 0211
             #grid.attach(self.buttons['load'], 1, 2, 1, 1) #wolk_chg
             #grid.attach(self.buttons['unload'], 2, 2, 1, 1)
-            grid.attach(self.buttons['retract'], 1, 1, 1, 1) # 3211
+            grid.attach(self.buttons['retract'], 2, 1, 2, 1) # 3211
             grid.attach(distbox, 0, 4, 2, 1)
             grid.attach(speedbox, 2, 4, 2, 1)
             grid.attach(sensors, 0, 4, 4, 1)
@@ -198,7 +206,7 @@ class Panel(ScreenPanel):
             if out_name.startswith("_"):
                 continue
             if out_name.startswith("EPRESS"):
-                logging.info(f"EPRESS search: {out_name}")
+                #logging.info(f"EPRESS search: {out_name}")
                 out_name = Gtk.Label(
                     hexpand=True, vexpand=True, halign=Gtk.Align.START, valign=Gtk.Align.CENTER,
                     wrap=True, wrap_mode=Pango.WrapMode.WORD_CHAR)

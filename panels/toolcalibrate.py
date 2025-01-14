@@ -30,14 +30,14 @@ class Panel(ScreenPanel):
         self.settings = {}
         self.menu.append("move_menu")
         self.buttons = {
-            "y+": self._gtk.Button("arrow-up", "Y+", "color2"),
-            "y-": self._gtk.Button("arrow-down", "Y-", "color2"),
-            "tz1+": self._gtk.Button("arrow-up", "TZ1+", "color5"),
-            "tz1-": self._gtk.Button("arrow-down", "TZ1-", "color5"),
-            "tz2+": self._gtk.Button("arrow-up", "TZ2+", "color5"),
-            "tz2-": self._gtk.Button("arrow-down", "TZ2-", "color5"),
-            "tz3+": self._gtk.Button("arrow-up", "TZ3+", "color5"),
-            "tz3-": self._gtk.Button("arrow-down", "TZ3-", "color5"),
+            "y+": self._gtk.Button("arrow-down", "Y+", "color2"),
+            "y-": self._gtk.Button("arrow-up", "Y-", "color2"),
+            "tz0+": self._gtk.Button("arrow-down", "TZ0+", "color5"),
+            "tz0-": self._gtk.Button("arrow-up", "TZ0-", "color5"),
+            "tz1+": self._gtk.Button("arrow-down", "TZ1+", "color5"),
+            "tz1-": self._gtk.Button("arrow-up", "TZ1-", "color5"),
+            "tz2+": self._gtk.Button("arrow-down", "TZ2+", "color5"),
+            "tz2-": self._gtk.Button("arrow-up", "TZ2-", "color5"),
             "u+": self._gtk.Button("arrow-right", "U+", "color5"),
             "u-": self._gtk.Button("arrow-left", "U-", "color5"),
             "savepos": self._gtk.Button("file", "Save\nPosition", "color6"),
@@ -48,12 +48,12 @@ class Panel(ScreenPanel):
         self.buttons["y+"].connect("clicked", self.move, "Y", "+")
         self.buttons["y-"].connect("clicked", self.move, "Y", "-")
         # wolk_add
+        self.buttons["tz0+"].connect("clicked", self.move, "TZ0", "+")
+        self.buttons["tz0-"].connect("clicked", self.move, "TZ0", "-")
         self.buttons["tz1+"].connect("clicked", self.move, "TZ1", "+")
         self.buttons["tz1-"].connect("clicked", self.move, "TZ1", "-")
         self.buttons["tz2+"].connect("clicked", self.move, "TZ2", "+")
         self.buttons["tz2-"].connect("clicked", self.move, "TZ2", "-")
-        self.buttons["tz3+"].connect("clicked", self.move, "TZ3", "+")
-        self.buttons["tz3-"].connect("clicked", self.move, "TZ3", "-")
         self.buttons["u+"].connect("clicked", self.move, "U", "+")
         self.buttons["u-"].connect("clicked", self.move, "U", "-")
         
@@ -77,14 +77,14 @@ class Panel(ScreenPanel):
         
         grid = Gtk.Grid(row_homogeneous=True, column_homogeneous=True)
         
-        grid.attach(self.buttons["y+"], 2, 0, 1, 1)
-        grid.attach(self.buttons["y-"], 2, 1, 1, 1)
-        grid.attach(self.buttons["tz1+"], 4, 0, 1, 1)
-        grid.attach(self.buttons["tz1-"], 5, 0, 1, 1)
-        grid.attach(self.buttons["tz2+"], 4, 1, 1, 1)
-        grid.attach(self.buttons["tz2-"], 5, 1, 1, 1)
-        grid.attach(self.buttons["tz3+"], 4, 2, 1, 1)
-        grid.attach(self.buttons["tz3-"], 5, 2, 1, 1)
+        grid.attach(self.buttons["y+"], 2, 1, 1, 1)
+        grid.attach(self.buttons["y-"], 2, 0, 1, 1)
+        grid.attach(self.buttons["tz0+"], 4, 0, 1, 1)
+        grid.attach(self.buttons["tz0-"], 5, 0, 1, 1)
+        grid.attach(self.buttons["tz1+"], 4, 1, 1, 1)
+        grid.attach(self.buttons["tz1-"], 5, 1, 1, 1)
+        grid.attach(self.buttons["tz2+"], 4, 2, 1, 1)
+        grid.attach(self.buttons["tz2-"], 5, 2, 1, 1)
         grid.attach(self.buttons["u+"], 3, 1, 1, 1)
         grid.attach(self.buttons["u-"], 1, 1, 1, 1)
         
@@ -218,7 +218,7 @@ class Panel(ScreenPanel):
             self.current_pos[1] = self._printer.get_stat("gcode_move", "gcode_position")[1]
             #logging.info(f"### test2 logging {test2}")
             # wolk_add
-            self.labels[f"pos_z123"].set_text(f"TZ1: {ex_axis_tz1:.2f}\nTZ2: {ex_axis_tz2:.2f}\nTZ3: {ex_axis_tz3:.2f}")
+            self.labels[f"pos_z123"].set_text(f"TZ0: {ex_axis_tz1:.2f}\nTZ1: {ex_axis_tz2:.2f}\nTZ2: {ex_axis_tz3:.2f}")
             self.labels[f"pos_xy"].set_text(f"U: {ex_axis_u0:.2f}\nY: {self.current_pos[1]:.2f}")
             self.labels[f"pos_tz1"].set_text(
                 f"\tcurrent/stored\n  U: {cr_t0_xp:.2f}\t/ {sv_t0xp:.2f}\n  Y: {cr_t0_yp:.2f}\t/ {sv_t0yp:.2f}\n  Z: {cr_t0_zp:.2f}\t/ {sv_t0zp:.2f}")
@@ -282,11 +282,11 @@ class Panel(ScreenPanel):
         # wolk_add
         else :
             axis_ex = ""
-            if axis == "tz1":
+            if axis == "tz0":
                 axis_ex = "A0"
-            elif axis == "tz2":
+            elif axis == "tz1":
                 axis_ex = "A1"
-            elif axis == "tz3":
+            elif axis == "tz2":
                 axis_ex = "A2"
             elif axis == "u":
                 axis_ex = "U0"
