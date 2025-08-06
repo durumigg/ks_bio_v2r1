@@ -41,6 +41,8 @@ class Panel(ScreenPanel):
             "u+": self._gtk.Button("arrow-right", "U+", "color5"),
             "u-": self._gtk.Button("arrow-left", "U-", "color5"),
             "savepos": self._gtk.Button("file", "Save\nPosition", "color6"),
+            "calpos": self._gtk.Button("", "Move cal\nPosition", "color6"),
+            "loadpos": self._gtk.Button("", "Load Saved pos", "color6"),
             "initpos": self._gtk.Button("bed-level-center", "0 Set", "color6"),
             "setpos": self._gtk.Button("check", "Apply Position", "color6"),
         }
@@ -73,6 +75,22 @@ class Panel(ScreenPanel):
             _("Are you sure you wish to 0 pos set?"),
             "printer.gcode.script",
             init_script,
+            )
+        calmove_script = {"script": "_MOVE_CALPOS_XY"}
+        self.buttons["calpos"].connect(
+            "clicked", 
+            self._screen._confirm_send_action, 
+            _("Do you want to go to the calibration position?"),
+            "printer.gcode.script",
+            calmove_script,
+            )
+        load_script = {"script": "_EXT_OFFSETPOS_LOAD"}
+        self.buttons["loadpos"].connect(
+            "clicked", 
+            self._screen._confirm_send_action, 
+            _("Are you sure you want to load the saved position data?"),
+            "printer.gcode.script",
+            load_script,
             )
         
         grid = Gtk.Grid(row_homogeneous=True, column_homogeneous=True)
@@ -128,9 +146,11 @@ class Panel(ScreenPanel):
         bottomgrid.set_direction(Gtk.TextDirection.LTR)
         grid.attach(self.labels["pos_xy"], 2, 2, 1, 1)
         grid.attach(self.labels["pos_z123"], 3, 2, 1, 1)
-        bottomgrid.attach(self.buttons["savepos"], 3, 0, 3, 2)
+        bottomgrid.attach(self.buttons["savepos"], 4, 0, 2, 2)
         bottomgrid.attach(self.buttons["initpos"], 0, 0, 1, 2)
-        bottomgrid.attach(self.buttons["setpos"], 1, 0, 2, 2)
+        bottomgrid.attach(self.buttons["calpos"], 1, 0, 1, 2)
+        bottomgrid.attach(self.buttons["setpos"], 2, 0, 1, 2)
+        bottomgrid.attach(self.buttons["loadpos"], 3, 0, 1, 2)
         #bottomgrid.attach(self.labels["pos_z"], 2, 0, 1, 1)
         # wolk_add
         grid.attach(self.labels["pos_tz1"], 6, 0, 2, 1)

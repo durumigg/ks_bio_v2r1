@@ -66,7 +66,7 @@ class Panel(ScreenPanel):
         self.buttons["v-"].connect("clicked", self.move, "V", "-")
         # end_add
         self.buttons["home"].connect("clicked", self.home)
-        script = {"script": "M18"}
+        script = {"script": "M18\n_DISABLE_MANUAL_MOTOR"}
         self.buttons["motors_off"].connect(
             "clicked",
             self._screen._confirm_send_action,
@@ -179,38 +179,6 @@ class Panel(ScreenPanel):
             max_z_velocity = max_velocity
 
         configurable_options = [
-            {
-                "invert_x": {
-                    "section": "main",
-                    "name": _("Invert X"),
-                    "type": "binary",
-                    "tooltip": _("This will affect screw positions and mesh graph"),
-                    "value": "False",
-                    "callback": self.reinit_panels,
-                }
-            },
-            {
-                "invert_y": {
-                    "section": "main",
-                    "name": _("Invert Y"),
-                    "type": "binary",
-                    "tooltip": _("This will affect screw positions and mesh graph"),
-                    "value": "False",
-                    "callback": self.reinit_panels,
-                }
-            },
-            {
-                "invert_z": {
-                    "section": "main",
-                    "name": _("Invert Z"),
-                    "tooltip": _(
-                        "Swaps buttons if they are on top of each other, affects other panels"
-                    ),
-                    "type": "binary",
-                    "value": "False",
-                    "callback": self.reinit_move,
-                }
-            },
             {
                 "move_speed_xy": {
                     "section": "main",

@@ -10,6 +10,7 @@ from datetime import datetime
 from math import log
 from ks_includes.screen_panel import ScreenPanel
 
+from collections import deque
 
 class BasePanel(ScreenPanel):
     def __init__(self, screen, title=None):
@@ -23,6 +24,10 @@ class BasePanel(ScreenPanel):
         self.current_extruder = None
         self.last_usage_report = datetime.now()
         self.usage_report = 0
+        
+        # 250206: add_wolk
+        self.test_humidity_buffer = deque(maxlen=10)
+        self.test_temperature_buffer = deque(maxlen=10)
         # Action bar buttons
         abscale = self.bts * 1.1
         self.control['back'] = self._gtk.Button('back', scale=abscale)
@@ -160,6 +165,12 @@ class BasePanel(ScreenPanel):
                 elif device.startswith("temperature_sensor enclosure"):
                     self.control['temp_box'].add(self.labels[f"{device}_box"])
                     n += 1
+                if device.startswith("temperature_sensor test_humidity"):
+                    self.control['temp_box'].add(self.labels[f"{device}_box"])
+                    n += 1
+                if device.startswith("temperature_sensor test_temperature"):
+                    self.control['temp_box'].add(self.labels[f"{device}_box"])
+                    n += 1
             for device in devices:
                 # Users can fill the bar if they want
                 if n >= nlimit + 1:
@@ -208,6 +219,12 @@ class BasePanel(ScreenPanel):
         self.show_heaters(connected)
         for control in ('back', 'home'):
             self.set_control_sensitive(len(self._screen._cur_panels) > 1, control=control)
+            
+        if printing:
+            self.set_control_sensitive(False, control='shortcut')
+        else:
+            self.set_control_sensitive(True, control='shortcut')
+            
         self.current_panel = panel
         self.set_title(panel.title)
         self.content.add(panel.content)
@@ -281,12 +298,28 @@ class BasePanel(ScreenPanel):
                         name = device.split()[1] if len(device.split()) > 1 else device
                         name = f"{name[:1].upper()}: "
                 ###################################################################################
+                # Moving average filter testtemp,humid
+                if device.startswith("temperature_sensor test_temperature"):
+                    self.test_temperature_buffer.append(temp)
+                    filtered_temp = sum(self.test_temperature_buffer) / len(self.test_temperature_buffer)
+                    #logging.debug(f"Filtered Test Temperature: {name}")
+                    #logging.debug(f"Filtered Test Temperature: {filtered_temp:.2f}")
+                    self.labels[device].set_label(f"{name}{filtered_temp:.0f}°")
+                elif device.startswith("temperature_sensor test_humidity"):
+                    self.test_humidity_buffer.append(temp)
+                    filtered_humid = sum(self.test_humidity_buffer) / len(self.test_humidity_buffer)
+                    #logging.debug(f"Filtered Humidity Temp: {name}")
+                    #logging.debug(f"Filtered Humidity Temp: {filtered_humid:.2f}")
+                    self.labels[device].set_label(f"{name}{filtered_humid:.0f}%")
                 ## 240705_chg_wolk : add humidity
-                if device.startswith("temperature_sensor enclosure"):
+                elif device.startswith("temperature_sensor enclosure"):
                     self.labels[device].set_label(f"{name}{temp:.0f}° {humid:.0f}%")
-                    #logging.debug(f"#############################heaters: {humid}")
+                    #logging.debug(f"#############################heaters: {name}")
                 else:
                     self.labels[device].set_label(f"{name}{temp:.0f}°") #origin
+
+                
+                    
 
         if (self.current_extruder and 'toolhead' in data and 'extruder' in data['toolhead']
                 and data["toolhead"]["extruder"] != self.current_extruder):

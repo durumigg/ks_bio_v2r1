@@ -276,6 +276,7 @@ class KlipperScreen(Gtk.Window):
                 "screws_tilt_adjust": ['results', 'error'],
                 "htu21d enclosure": ['temperature', 'humidity'],#240705_add_wolk
                 "gcode_macro _EXT_AXIS_STA": ['a0_pos', 'a1_pos', 'a2_pos', 'u0_pos', 'v0_pos'],
+                "gcode_macro CONFIGS": ['status_duplicator', 'act_ext', 'distance', 'act_ext_str'],
                 "save_variables": ['variables'], # wolk_add
                 "gcode_macro _EXT_OFFSETPOS_STA": ['t0_x_pos', 't0_y_pos', 't0_z_pos', 't1_x_pos', 't1_y_pos', 't1_z_pos', 
                                                    't2_x_pos', 't2_y_pos', 't2_z_pos'],

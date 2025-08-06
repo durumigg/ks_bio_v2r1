@@ -815,6 +815,7 @@ class Panel(ScreenPanel):
     def _update_file_metadata(self):
         self.file_metadata = self._files.get_file_info(self.filename)
         logging.info(f"Update Metadata. File: {self.filename} Size: {self.file_metadata['size']}")
+        logging.info(f"Update Metadata. {self.file_metadata}")
         if "estimated_time" in self.file_metadata and self.timeleft_type == "slicer":
             self.labels["est_time"].set_label(self.format_time(self.file_metadata['estimated_time']))
         if "object_height" in self.file_metadata:

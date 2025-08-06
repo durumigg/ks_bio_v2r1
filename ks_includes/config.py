@@ -188,6 +188,11 @@ class KlipperScreenConfig:
             elif section.startswith('preheat '):
                 strs = ('gcode', '')
                 numbers = [f'{option}' for option in config[section] if option != 'gcode']
+            elif section.startswith('mymymymy'):
+                numbers = (
+                    'data1', 'data2', 'data3',
+                )
+                #logging.info(f"numbersnumbersnumbersnumbers lang {numbers}")
             elif section.startswith('menu '):
                 strs = ('name', 'icon', 'panel', 'method', 'params', 'enable', 'confirm', 'style')
             elif section.startswith('graph')\

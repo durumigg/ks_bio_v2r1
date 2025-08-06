@@ -17,13 +17,16 @@ class Panel(ScreenPanel):
     def __init__(self, screen, title):
         title = title or _("Extrude")
         super().__init__(screen, title)
-        self.current_extruder = self._printer.get_stat("toolhead", "extruder")
+        #self.current_extruder = self._printer.get_stat("toolhead", "extruder")
+        self.current_extruder = self._printer.get_stat("gcode_macro CONFIGS", "act_ext_str")
         macros = self._printer.get_config_section_list("gcode_macro ")
         self.load_filament = any("LOAD_FILAMENT" in macro.upper() for macro in macros)
         self.unload_filament = any("UNLOAD_FILAMENT" in macro.upper() for macro in macros)
+        
+        self.settings = {}
 
-        self.speeds = ['1', '2', '5', '25']
-        self.distances = ['5', '10', '15', '25']
+        self.speeds = ['1', '5', '15', '25']
+        self.distances = ['5', '10', '25', '50']
         if self.ks_printer_cfg is not None:
             dis = self.ks_printer_cfg.get("extrude_distances", '')
             if re.match(r'^[0-9,\s]+$', dis):
@@ -45,6 +48,7 @@ class Panel(ScreenPanel):
             'temperature': self._gtk.Button("heat-up", _("Temperature"), "color4"),
             'spoolman': self._gtk.Button("spoolman", "Spoolman", "color3"),
             'pressure': self._gtk.Button("settings", _("Pressure Advance"), "color2"),
+            'presspin': self._gtk.Button("settings", _("press details"), "color2"),
             'retraction': self._gtk.Button("settings", _("Retraction"), "color1")
         }
         self.buttons['extrude'].connect("clicked", self.extrude, "+")
@@ -60,29 +64,35 @@ class Panel(ScreenPanel):
         self.buttons['pressure'].connect("clicked", self.menu_item_clicked, {
             "panel": "pressure_advance"
         })
+        self.buttons['presspin'].connect("clicked", self.menu_item_clicked, {
+            "panel": "pins_press"
+        })
         self.buttons['retraction'].connect("clicked", self.menu_item_clicked, {
             "panel": "retraction"
         })
 
         xbox = Gtk.Box(homogeneous=True)
-        limit = 4
+        limit = 5
         i = 0
         extruder_buttons = []
         self.labels = {}
-        temp_tools = []
+        #temp_tools = []
         #temp_tools = self._printer.get_tools()
         #temp_tools.append('extruder3')
-        temp_tools = ['extruder', 'extruder1', 'extruder2', 'extruder3']
+        self.temp_tools = ['extruder', 'extruder1', 'extruder2', 'extruder3']
         #for extruder in self._printer.get_tools():
-        logging.info(f"extruder: {temp_tools}")
-        for extruder in temp_tools:
+        logging.info(f"extruder: {self.temp_tools}")
+        for extruder in self.temp_tools:
             if self._printer.extrudercount == 1:
                 self.labels[extruder] = self._gtk.Button("extruder", "")
             else:
                 #n = self._printer.get_tool_number(extruder)
                 n = i
                 logging.info(f"extruder number: {n}")
-                self.labels[extruder] = self._gtk.Button(f"extruder-{n}", f"T{n}")
+                if extruder == "extruder3":
+                    self.labels[extruder] = self._gtk.Button(f"extruder-{n}", f"TA")
+                else:
+                    self.labels[extruder] = self._gtk.Button(f"extruder-{n}", f"T{n}")
                 self.labels[extruder].connect("clicked", self.change_extruder, extruder)
             if extruder == self.current_extruder:
                 self.labels[extruder].get_style_context().add_class("button_active")
@@ -201,38 +211,36 @@ class Panel(ScreenPanel):
         output_pins = self._printer.get_pwm_tools() + self._printer.get_output_pins()
         logging.info(f"output pin: {output_pins}")
         for pin in output_pins:
-            # Support for hiding devices by name
             out_name = pin.split()[1]
             if out_name.startswith("_"):
                 continue
-            if out_name.startswith("EPRESS"):
-                #logging.info(f"EPRESS search: {out_name}")
-                out_name = Gtk.Label(
-                    hexpand=True, vexpand=True, halign=Gtk.Align.START, valign=Gtk.Align.CENTER,
-                    wrap=True, wrap_mode=Pango.WrapMode.WORD_CHAR)
-                out_name.set_markup(f'\n<big><b>{" ".join(pin.split(" ")[1:])}</b></big>\n')
-                self.devices[pin] = {}
-                section = self._printer.get_config_section(pin)
-                if parse_bool(section.get('pwm', 'false')) or parse_bool(section.get('hardware_pwm', 'false')):
-                    #logging.info(f"in if: {out_name}, pin: {pin}")
-                    scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, min=0, max=100, step=1)
-                    scale.set_value(self.check_pin_value(pin))
-                    scale.set_digits(0)
-                    scale.set_hexpand(True)
-                    scale.set_has_origin(True)
-                    scale.get_style_context().add_class("fan_slider")
-                    self.devices[pin]['scale'] = scale
-                    scale.connect("button-release-event", self.set_output_pin, pin)
 
-                    min_btn = self._gtk.Button("cancel", None, "color1", 0.4) #1)
-                    min_btn.set_hexpand(False)
-                    min_btn.connect("clicked", self.update_pin_value, pin, 0)
-                    pin_col = Gtk.Box(spacing=5)
-                    pin_col.add(min_btn)
-                    pin_col.add(scale)
-                    self.devices[pin]["row"] = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-                    self.devices[pin]["row"].add(out_name)
-                    self.devices[pin]["row"].add(pin_col)
+            if out_name.startswith("EPRESS"):
+                # Title 라벨 생성 (e.g., EPRESS1)
+                title_label = Gtk.Label(
+                    label=f"{out_name}",
+                    halign=Gtk.Align.START,
+                    valign=Gtk.Align.CENTER
+                )
+                title_label.get_style_context().add_class("label_header")
+
+                # 압력값 표시용 라벨 (초기값 임의)
+                val = self._printer.get_pin_value(pin)
+                value_label = Gtk.Label(
+                    label=f"{(val/2):.3f} MPa",
+                    halign=Gtk.Align.START,
+                    valign=Gtk.Align.CENTER
+                )
+                value_label.get_style_context().add_class("label_pressure")
+
+                # 저장 (이후 갱신에 사용)
+                self.labels[out_name] = value_label
+
+                # VBox로 정렬
+                row_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
+                row_box.add(title_label)
+                row_box.add(value_label)
+                self.devices[pin] = {"row": row_box}
                     
                     #logging.info(f"pinpinpinpinout_name: {pin}")
                     
@@ -240,44 +248,46 @@ class Panel(ScreenPanel):
         self.labels['devices'].attach(self.devices['output_pin EPRESS2']['row'], 1, 1, 1, 1)
         self.labels['devices'].attach(self.devices['output_pin EPRESS3']['row'], 2, 1, 1, 1)
         
+        self.labels['devices'].attach(self.buttons['presspin'], 3, 1, 3, 1)    
+        
         # add_end
 
         self.menu = ['extrude_menu']
         self.labels['extrude_menu'] = grid
         self.content.add(self.labels['extrude_menu'])
-    
-    # wolk_add
-    def set_output_pin(self, widget, event, pin):
-        if isinstance(widget, Gtk.Switch):
-            widget.set_sensitive(False)
-        if 'scale' in self.devices[pin]:
-            value = self.devices[pin]["scale"].get_value() / 100
-        elif 'switch' in self.devices[pin]:
-            value = 1 if self.devices[pin]['switch'].get_active() else 0
-        else:
-            logging.error(f'unknown value for {widget} {event} {pin}')
-            return
-        self._screen._ws.klippy.gcode_script(f'SET_PIN PIN={" ".join(pin.split(" ")[1:])} VALUE={value}')
-        GLib.timeout_add_seconds(1, self.check_pin_value, pin, widget)
-                
-    def check_pin_value(self, pin, widget=None):
-        self.update_pin_value(None, pin, self._printer.get_pin_value(pin))
-        if widget and isinstance(widget, Gtk.Switch):
-            widget.set_sensitive(True)
-        return False
 
-    def update_pin_value(self, widget, pin, value):
-        if pin not in self.devices:
-            return
-        if 'scale' in self.devices[pin]:
-            self.devices[pin]['scale'].disconnect_by_func(self.set_output_pin)
-            self.devices[pin]['scale'].set_value(round(float(value) * 100))
-            self.devices[pin]['scale'].connect("button-release-event", self.set_output_pin, pin)
-        elif 'switch' in self.devices[pin]:
-            self.devices[pin]['switch'].set_active(value == 1)
-        if widget is not None:
-            self.set_output_pin(widget, None, pin)
-    # add_end
+    # # wolk_add
+    # def set_output_pin(self, widget, event, pin):
+    #     if isinstance(widget, Gtk.Switch):
+    #         widget.set_sensitive(False)
+    #     if 'scale' in self.devices[pin]:
+    #         value = self.devices[pin]["scale"].get_value() / 100
+    #     elif 'switch' in self.devices[pin]:
+    #         value = 1 if self.devices[pin]['switch'].get_active() else 0
+    #     else:
+    #         logging.error(f'unknown value for {widget} {event} {pin}')
+    #         return
+    #     self._screen._ws.klippy.gcode_script(f'SET_PIN PIN={" ".join(pin.split(" ")[1:])} VALUE={value}')
+    #     GLib.timeout_add_seconds(1, self.check_pin_value, pin, widget)
+                
+    # def check_pin_value(self, pin, widget=None):
+    #     self.update_pin_value(None, pin, self._printer.get_pin_value(pin))
+    #     if widget and isinstance(widget, Gtk.Switch):
+    #         widget.set_sensitive(True)
+    #     return False
+
+    # def update_pin_value(self, widget, pin, value):
+    #     if pin not in self.devices:
+    #         return
+    #     if 'scale' in self.devices[pin]:
+    #         self.devices[pin]['scale'].disconnect_by_func(self.set_output_pin)
+    #         self.devices[pin]['scale'].set_value(round(float(value) * 100))
+    #         self.devices[pin]['scale'].connect("button-release-event", self.set_output_pin, pin)
+    #     elif 'switch' in self.devices[pin]:
+    #         self.devices[pin]['switch'].set_active(value == 1)
+    #     if widget is not None:
+    #         self.set_output_pin(widget, None, pin)
+    # # add_end
 
     def enable_buttons(self, enable):
         for button in self.buttons:
@@ -332,9 +342,15 @@ class Panel(ScreenPanel):
                             self.labels[x]['box'].get_style_context().add_class("filament_sensor_empty")
                 logging.info(f"{x}: {self._printer.get_stat(x)}")
         # wolk_add        
+        #for pin in self.devices:
+        #    if pin in data and "value" in data[pin]:
+        #        self.update_pin_value(None, pin, data[pin]["value"])
         for pin in self.devices:
-            if pin in data and "value" in data[pin]:
-                self.update_pin_value(None, pin, data[pin]["value"])
+            out_name = pin.split()[1]
+            if out_name.startswith("EPRESS") and pin in data and "value" in data[pin]:
+                val = float(data[pin]["value"])
+                if out_name in self.labels:
+                    self.labels[out_name].set_text(f"{(val/2):.3f} MPa")
         # add_end
 
     def change_distance(self, widget, distance):
@@ -345,11 +361,18 @@ class Panel(ScreenPanel):
 
     def change_extruder(self, widget, extruder):
         logging.info(f"Changing extruder to {extruder}")
-        for tool in self._printer.get_tools():
+        #for tool in self._printer.get_tools():
+        toolnum = 0
+        if extruder == "extruder": toolnum = 0
+        elif extruder == "extruder1": toolnum = 1
+        elif extruder == "extruder2": toolnum = 2
+        elif extruder == "extruder3": toolnum = 3
+        for tool in self.temp_tools:
             self.labels[tool].get_style_context().remove_class("button_active")
         self.labels[extruder].get_style_context().add_class("button_active")
         self._screen._send_action(widget, "printer.gcode.script",
-                                  {"script": f"T{self._printer.get_tool_number(extruder)}"})
+                                  {"script": f"T{toolnum}"})
+                                  #{"script": f"T{self._printer.get_tool_number(extruder)}"})
 
     def change_speed(self, widget, speed):
         logging.info(f"### Speed {speed}")

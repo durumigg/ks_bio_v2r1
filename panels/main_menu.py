@@ -8,6 +8,8 @@ from ks_includes.widgets.heatergraph import HeaterGraph
 from ks_includes.widgets.keypad import Keypad
 from ks_includes.KlippyGtk import find_widget
 
+from collections import deque
+
 
 class Panel(MenuPanel):
     def __init__(self, screen, title, items=None):
@@ -21,6 +23,10 @@ class Panel(MenuPanel):
         #self.second_menu = Gtk.Grid() # wolk_add
         scroll = self._gtk.ScrolledWindow()
         self.numpad_visible = False
+        
+        self.buffer_size = 20
+        self.humidity_buffer = deque(maxlen=self.buffer_size)
+        self.temperature_buffer = deque(maxlen=self.buffer_size)
 
         logging.info("### Making MainMenu")
         
@@ -279,12 +285,35 @@ class Panel(MenuPanel):
             return
         for x in self._printer.get_temp_devices():
             if x in data:
-                self.update_temp(
-                    x,
-                    self._printer.get_stat(x, "temperature"),
-                    self._printer.get_stat(x, "target"),
-                    self._printer.get_stat(x, "power"),
-                )
+                if x == "temperature_sensor test_humidity":
+                    temp_data = self._printer.get_stat(x, "temperature")
+                    self.humidity_buffer.append(temp_data)
+                    filtered_humi = sum(self.humidity_buffer) / len(self.humidity_buffer)
+                    #logging.info(f"Filtered Humidity: {filtered_value}")
+                    self.update_temp(
+                        x,
+                        round(filtered_humi, 2),
+                        self._printer.get_stat(x, "target"),
+                        self._printer.get_stat(x, "power"),
+                    )
+                elif x == "temperature_sensor test_temperature":
+                    temp_data = self._printer.get_stat(x, "temperature")
+                    self.temperature_buffer.append(temp_data)
+                    filtered_temp = sum(self.temperature_buffer) / len(self.temperature_buffer)
+                    #logging.info(f"Filtered Temperature: {filtered_value}")
+                    self.update_temp(
+                        x,
+                        round(filtered_temp, 2),
+                        self._printer.get_stat(x, "target"),
+                        self._printer.get_stat(x, "power"),
+                    )
+                else:
+                    self.update_temp(
+                        x,
+                        self._printer.get_stat(x, "temperature"),
+                        self._printer.get_stat(x, "target"),
+                        self._printer.get_stat(x, "power"),
+                    )
 
     def show_numpad(self, widget, device):
         if self.active_heater is not None:
